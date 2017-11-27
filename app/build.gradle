@@ -1,33 +1,204 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.butterknife'
+apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.jakewharton.hugo'
 
 apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+kapt {
+    generateStubs = true
+}
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+    google()
+}
+
+
 android {
-    compileSdkVersion 26
+    compileSdkVersion 25
+    buildToolsVersion '26.0.2'
+
     defaultConfig {
         applicationId "com.myfirstkotlinapp"
-        minSdkVersion 15
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 10
+        versionName "V.1.0"
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
     }
+
+    lintOptions {
+        // if true, stop the gradle build if errors are found
+        abortOnError false
+        // if true, only report errors
+        ignoreWarnings true
+    }
+
+    /*signingConfigs {
+        releaseConfig {
+            keyAlias 'key alias name'
+            keyPassword 'key password'
+            storeFile file('./filename')
+            storePassword 'store password'
+        }
+    }*/
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//            signingConfig signingConfigs.releaseConfig
         }
+
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            shrinkResources false
+            debuggable true
+//            signingConfig signingConfigs.releaseConfig
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/ECLIPSE_.SF'
+        exclude 'META-INF/ECLIPSE_.RSA'
+        pickFirst 'META-INF/rxjava.properties'
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+}
+
+apply from: 'dependencies.gradle'
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+
+    compile supportLibs
+    compile networkLibs
+    compile rxJavaLibs
+    compile misc
+
+    // Chuck -> For API calls notification
+    debugCompile "com.readystatesoftware.chuck:library:$versions.chuck"
+    releaseCompile "com.readystatesoftware.chuck:library-no-op:$versions.chuck"
+
+    // Sherlock -> Report crashes in notification, helpful for testers/testing
+    debugCompile('com.github.ajitsing:sherlock:1.0.2@aar') {
+        transitive = true
+    }
+    releaseCompile('com.github.ajitsing:sherlock-no-op:1.0.2@aar')
+
+    // APT dependencies
+    annotationProcessor annotationProcessLibs
+    testAnnotationProcessor daggerCompiler
+    androidTestAnnotationProcessor daggerCompiler
+}
+
+/*
+android {
+
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
+
+    defaultConfig {
+        applicationId "com.myfirstkotlinapp"
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "V.1.0"
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    */
+/*signingConfigs {
+        releaseConfig {
+            keyAlias ''
+            keyPassword ''
+//            storeFile file('./filename')
+            storePassword ''
+        }
+    }
+*//*
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//            signingConfig signingConfigs.releaseConfig
+        }
+
+        debug {
+            minifyEnabled false
+            zipAlignEnabled true
+            shrinkResources false
+            debuggable true
+//            signingConfig signingConfigs.releaseConfig
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/ECLIPSE_.SF'
+        exclude 'META-INF/ECLIPSE_.RSA'
+        pickFirst 'META-INF/rxjava.properties'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
+
+
+apply from: 'dependencies.gradle'
+
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    compile androidSupportLibs
+    compile networkLibs
+    compile rxJavaLibs
+//    compile googlePlayLibs
+    compile misc
+
+    // Chuck -> For API calls notification
+    debugCompile "com.readystatesoftware.chuck:library:$versions.chuck"
+    releaseCompile "com.readystatesoftware.chuck:library-no-op:$versions.chuck"
+
+    // Sherlock -> Report crashes in notification, helpful for testers/testing
+    debugCompile('com.github.ajitsing:sherlock:1.0.2@aar') {
+        transitive = true
+    }
+    releaseCompile('com.github.ajitsing:sherlock-no-op:1.0.2@aar')
+
+    annotationProcessor annotationProcessLibs
 }
+*/
